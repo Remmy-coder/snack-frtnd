@@ -9,11 +9,7 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-      colors: {
-        secondary: {
-          600: "#066523",
-        },
-      },
+      colors: {},
     },
   },
   plugins: [require("tailwindcss-animate")],

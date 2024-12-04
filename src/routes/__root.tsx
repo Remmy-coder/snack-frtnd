@@ -13,10 +13,11 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-  const match = useMatch({ from: "/register", shouldThrow: false });
+  const registerMatch = useMatch({ from: "/register", shouldThrow: false });
+  const loginMatch = useMatch({ from: "/login", shouldThrow: false });
   return (
     <>
-      {!match && (
+      {!registerMatch && !loginMatch && (
         <>
           <nav className="p-2 flex gap-12 text-lg mx-5 mt-2">
             <h3>Logo</h3>
@@ -30,9 +31,11 @@ function RootComponent() {
                   Register
                 </Button>
               </Link>
-              <Button variant="greenOutline" className="rounded-none">
-                Login
-              </Button>
+              <Link to="/login">
+                <Button variant="greenOutline" className="rounded-none">
+                  Login
+                </Button>
+              </Link>
             </div>{" "}
           </nav>
           <hr />

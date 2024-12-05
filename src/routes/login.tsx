@@ -1,11 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, Eye, EyeClosed } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { login } from "~/api/auth";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { toast } from "~/hooks/use-toast";
 
 export const Route = createFileRoute("/login")({
   component: RouteComponent,
@@ -16,26 +19,47 @@ const loginSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters."),
 });
 
-type LoginFormData = z.infer<typeof loginSchema>;
+export type LoginFormData = z.infer<typeof loginSchema>;
 
 function RouteComponent() {
   const navigate = useNavigate();
 
   const {
     register,
+    reset,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
+  const mutation = useMutation({
+    mutationFn: login,
+    onSuccess: (data) => {
+      //console.log("Login successful", data);
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("client_surname", data.client.surname);
+      toast({
+        color: "bg-green-600",
+        title: "Login successful",
+      });
+      navigate({ from: "/" });
+      reset();
+    },
+    onError: (error) => {
+      //console.error("Login failed", error);
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: error.message,
+      });
+    },
+  });
+
   const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = (data: LoginFormData) => {
-    console.log(data);
-    // Implement your login logic here (e.g., calling an API)
-    // For now, we will just navigate to the home page after submission.
-    navigate({ from: "/" });
+    mutation.mutate(data);
   };
 
   const handleBackClick = () => {

@@ -1,11 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, Eye, EyeClosed } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { register as create } from "~/api/auth";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { ToastAction } from "~/components/ui/toast";
+import { toast } from "~/hooks/use-toast";
 
 export const Route = createFileRoute("/register")({
   component: RouteComponent,
@@ -26,24 +30,46 @@ const registerSchema = z
     path: ["confirmPassword"],
   });
 
-type RegisterFormData = z.infer<typeof registerSchema>;
+export type RegisterFormData = z.infer<typeof registerSchema>;
 
 function RouteComponent() {
   const navigate = useNavigate();
 
   const {
     register,
+    reset,
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
 
+  const mutation = useMutation({
+    mutationFn: create,
+    onSuccess: (data) => {
+      //console.log("Registration successful", data);
+      toast({
+        className: "bg-green-600",
+        title: "Registration successful, proceed to login",
+      });
+      navigate({ from: "/" });
+      reset();
+    },
+    onError: (error) => {
+      //console.error("Registration failed", error);
+      toast({
+        variant: "destructive",
+        title: "Registration failed",
+        description: error.message,
+      });
+    },
+  });
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const onSubmit = (data: RegisterFormData) => {
-    console.log(data);
+    mutation.mutate(data);
   };
 
   const handleBackClick = () => {
@@ -214,7 +240,7 @@ function RouteComponent() {
               <Button
                 type="submit"
                 variant="green"
-                className="w-full mt-4 bg-civis-blue text-white py-3 rounded"
+                className="w-full mt-4 <F34> text-white py-3 rounded"
               >
                 Register
               </Button>
